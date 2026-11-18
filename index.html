@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Square Custom Monthly Calendar</title>
+  <title>Responsive Square Calendar</title>
   <style>
     :root {
       --header-bg: #c6def5;
@@ -19,20 +19,23 @@
       padding: 0;
     }
 
-    body {
+    /* 스크롤바 방지를 위해 html, body도 100폭/높이 고정 */
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: transparent;
+      font-family: Georgia, "Times New Roman", Times, serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      background-color: transparent;
-      font-family: Georgia, "Times New Roman", Times, serif;
     }
 
-    /* 완전 직각(border-radius: 0) 및 정사각형(width = height) 설정 */
+    /* 고정 크기 대신 노션 창 크기에 맞춰 100% 채우기 */
     .calendar-widget {
       position: relative;
-      width: 280px;
-      height: 280px;
+      width: 100%;
+      height: 100%;
       background-color: var(--body-bg);
       border-radius: 0px;
       display: flex;
@@ -44,8 +47,9 @@
     /* 상단 헤더 영역 */
     .calendar-header {
       background-color: var(--header-bg);
-      height: 48px;
-      padding: 0 16px;
+      height: 20%; /* 전체 높이의 20% 차지 */
+      min-height: 36px;
+      padding: 0 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -56,7 +60,7 @@
       background: none;
       border: none;
       color: #5a6572;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
       padding: 4px 8px;
       display: flex;
@@ -71,17 +75,17 @@
     }
 
     .month-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text-main);
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
-    /* 달력 본문 영역 (남은 정사각형 높이를 꽉 채우도록 설정) */
+    /* 달력 본문 영역 */
     .calendar-body {
       flex: 1;
-      padding: 12px 16px 14px;
+      padding: 8px 12px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -91,10 +95,6 @@
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
-    }
-
-    .weekdays {
-      margin-bottom: 4px;
     }
 
     .weekdays span {
@@ -109,21 +109,21 @@
     }
 
     .day-cell {
-      height: 28px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-main);
+      height: 100%;
     }
 
-    /* 오늘 날짜 강조 */
+    /* 오늘 날짜 강조 (크기에 맞춰 반응형으로 동그라미 유지) */
     .day-cell.today span {
       background-color: var(--accent-bg);
       color: #ffffff;
       font-weight: 700;
-      width: 25px;
-      height: 25px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
@@ -141,7 +141,7 @@
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 0px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -158,7 +158,7 @@
       position: absolute;
       inset: 0;
       background-color: rgba(255, 255, 255, 0.96);
-      padding: 18px;
+      padding: 16px;
       display: none;
       flex-direction: column;
       justify-content: space-between;
@@ -178,7 +178,7 @@
       font-weight: 700;
       color: #222;
       border-bottom: 1px solid #eee;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
 
     .close-btn {
@@ -198,8 +198,8 @@
     }
 
     .color-row input[type="color"] {
-      width: 36px;
-      height: 24px;
+      width: 32px;
+      height: 22px;
       border: 1px solid #ddd;
       padding: 0;
       background: none;
@@ -210,7 +210,6 @@
       display: flex;
       gap: 6px;
       justify-content: center;
-      margin-top: 2px;
     }
 
     .preset-btn {
@@ -241,7 +240,7 @@
   <div class="calendar-widget" id="widget">
     <div class="calendar-header">
       <button class="nav-btn" id="prevBtn" aria-label="Previous Month">&#10094;</button>
-      <div class="month-title" id="monthTitle">NOVEMBER</div>
+      <div class="month-title" id="monthTitle">DECEMBER</div>
       <button class="nav-btn" id="nextBtn" aria-label="Next Month">&#10095;</button>
     </div>
 
@@ -283,7 +282,6 @@
         <input type="color" id="accentColor" value="#33332d">
       </div>
 
-      <!-- 추천 프리셋 버튼 -->
       <div class="preset-row" title="추천 테마 바로 적용">
         <button class="preset-btn" style="background:#c6def5" data-h="#c6def5" data-b="#ebf3fc" data-a="#33332d"></button>
         <button class="preset-btn" style="background:#f5d0d6" data-h="#f5d0d6" data-b="#fdf2f4" data-a="#8a3b48"></button>
@@ -364,7 +362,6 @@
 
     renderCalendar(currentYear, currentMonth);
 
-    // --- 색상 커스터마이징 기능 ---
     const root = document.documentElement;
     const openThemeBtn = document.getElementById('openThemeBtn');
     const closeThemeBtn = document.getElementById('closeThemeBtn');
@@ -390,7 +387,6 @@
       localStorage.setItem('notionCalTheme', JSON.stringify({ header, body, accent }));
     }
 
-    // 저장된 테마 불러오기
     const savedTheme = JSON.parse(localStorage.getItem('notionCalTheme'));
     if (savedTheme) {
       applyColors(savedTheme.header, savedTheme.body, savedTheme.accent);
@@ -403,9 +399,9 @@
     bodyInput.addEventListener('input', (e) => applyColors(headerInput.value, e.target.value, accentInput.value));
     accentInput.addEventListener('input', (e) => applyColors(headerInput.value, bodyInput.value, e.target.value));
 
-    document.querySelectorAll('.preset-btn').forEach(btn => {
+    document.querySelectorAll('.preset-df, .preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        applyColors(btn.dataset.h, btn.dataset.b, btn.dataset.a);
+        if(btn.dataset.h) applyColors(btn.dataset.h, btn.dataset.b, btn.dataset.a);
       });
     });
 
