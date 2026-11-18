@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Square Calendar</title>
+  <title>Mini Square Calendar</title>
   <style>
     :root {
       --header-bg: #c6def5;
@@ -19,23 +19,22 @@
       padding: 0;
     }
 
-    /* 스크롤바 방지를 위해 html, body도 100폭/높이 고정 */
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: transparent;
-      font-family: Georgia, "Times New Roman", Times, serif;
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100vw;
+      height: 100vh;
+      background-color: transparent;
+      font-family: Georgia, "Times New Roman", Times, serif;
+      overflow: hidden;
     }
 
-    /* 고정 크기 대신 노션 창 크기에 맞춰 100% 채우기 */
+    /* 210px의 아담하고 딱 떨어지는 정사각형 사이즈 고정 */
     .calendar-widget {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 210px;
+      height: 210px;
       background-color: var(--body-bg);
       border-radius: 0px;
       display: flex;
@@ -44,12 +43,11 @@
       user-select: none;
     }
 
-    /* 상단 헤더 영역 */
+    /* 상단 헤더 */
     .calendar-header {
       background-color: var(--header-bg);
-      height: 20%; /* 전체 높이의 20% 차지 */
-      min-height: 36px;
-      padding: 0 12px;
+      height: 38px;
+      padding: 0 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -62,11 +60,10 @@
       color: #5a6572;
       font-size: 14px;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 2px 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.2s;
       font-family: sans-serif;
     }
 
@@ -75,17 +72,17 @@
     }
 
     .month-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-main);
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
-    /* 달력 본문 영역 */
+    /* 달력 본문 */
     .calendar-body {
       flex: 1;
-      padding: 8px 12px 10px;
+      padding: 8px 10px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -98,7 +95,7 @@
     }
 
     .weekdays span {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--text-sub);
     }
@@ -109,39 +106,38 @@
     }
 
     .day-cell {
+      height: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-main);
-      height: 100%;
     }
 
-    /* 오늘 날짜 강조 (크기에 맞춰 반응형으로 동그라미 유지) */
+    /* 오늘 날짜 강조 동그라미 */
     .day-cell.today span {
       background-color: var(--accent-bg);
       color: #ffffff;
       font-weight: 700;
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* 마우스 호버 시 나타나는 색상 설정 버튼 */
+    /* 팔레트 버튼 */
     .theme-toggle-btn {
       position: absolute;
-      bottom: 6px;
-      right: 6px;
-      width: 24px;
-      height: 24px;
-      background-color: rgba(255, 255, 255, 0.75);
+      bottom: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
       border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 0px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -157,8 +153,8 @@
     .theme-panel {
       position: absolute;
       inset: 0;
-      background-color: rgba(255, 255, 255, 0.96);
-      padding: 16px;
+      background-color: rgba(255, 255, 255, 0.97);
+      padding: 12px;
       display: none;
       flex-direction: column;
       justify-content: space-between;
@@ -174,17 +170,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #222;
       border-bottom: 1px solid #eee;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
     }
 
     .close-btn {
       background: none;
       border: none;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
       color: #666;
     }
@@ -193,13 +189,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 11px;
       color: #444;
     }
 
     .color-row input[type="color"] {
-      width: 32px;
-      height: 22px;
+      width: 28px;
+      height: 18px;
       border: 1px solid #ddd;
       padding: 0;
       background: none;
@@ -208,30 +204,26 @@
 
     .preset-row {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       justify-content: center;
     }
 
     .preset-btn {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border: 1px solid #ccc;
       cursor: pointer;
     }
 
     .reset-btn {
       width: 100%;
-      padding: 6px;
+      padding: 4px;
       background-color: #f3f4f6;
       border: 1px solid #d1d5db;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       color: #374151;
       cursor: pointer;
-    }
-
-    .reset-btn:hover {
-      background-color: #e5e7eb;
     }
   </style>
 </head>
@@ -239,58 +231,45 @@
 
   <div class="calendar-widget" id="widget">
     <div class="calendar-header">
-      <button class="nav-btn" id="prevBtn" aria-label="Previous Month">&#10094;</button>
-      <div class="month-title" id="monthTitle">DECEMBER</div>
-      <button class="nav-btn" id="nextBtn" aria-label="Next Month">&#10095;</button>
+      <button class="nav-btn" id="prevBtn">&#10094;</button>
+      <div class="month-title" id="monthTitle">NOVEMBER</div>
+      <button class="nav-btn" id="nextBtn">&#10095;</button>
     </div>
 
     <div class="calendar-body">
       <div class="weekdays">
-        <span>S</span>
-        <span>M</span>
-        <span>T</span>
-        <span>W</span>
-        <span>T</span>
-        <span>F</span>
-        <span>S</span>
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
       </div>
       <div class="days-grid" id="daysGrid"></div>
     </div>
 
-    <!-- 우측 하단 팔레트 버튼 -->
     <button class="theme-toggle-btn" id="openThemeBtn" title="색상 변경">🎨</button>
 
-    <!-- 색상 커스텀 패널 -->
     <div class="theme-panel" id="themePanel">
       <div class="panel-header">
-        <span>캘린더 색상 설정</span>
+        <span>색상 설정</span>
         <button class="close-btn" id="closeThemeBtn">&times;</button>
       </div>
-
       <div class="color-row">
-        <label for="headerColor">상단 헤더 색상</label>
+        <label for="headerColor">헤더</label>
         <input type="color" id="headerColor" value="#c6def5">
       </div>
-
       <div class="color-row">
-        <label for="bodyColor">전체 배경 색상</label>
+        <label for="bodyColor">배경</label>
         <input type="color" id="bodyColor" value="#ebf3fc">
       </div>
-
       <div class="color-row">
-        <label for="accentColor">오늘 날짜 강조색</label>
+        <label for="accentColor">강조</label>
         <input type="color" id="accentColor" value="#33332d">
       </div>
-
-      <div class="preset-row" title="추천 테마 바로 적용">
+      <div class="preset-row">
         <button class="preset-btn" style="background:#c6def5" data-h="#c6def5" data-b="#ebf3fc" data-a="#33332d"></button>
         <button class="preset-btn" style="background:#f5d0d6" data-h="#f5d0d6" data-b="#fdf2f4" data-a="#8a3b48"></button>
         <button class="preset-btn" style="background:#cde0d3" data-h="#cde0d3" data-b="#f2f7f4" data-a="#385443"></button>
         <button class="preset-btn" style="background:#e6dcc8" data-h="#e6dcc8" data-b="#f8f5ef" data-a="#5c4d3c"></button>
         <button class="preset-btn" style="background:#d9d9d9" data-h="#d9d9d9" data-b="#f5f5f5" data-a="#222222"></button>
       </div>
-
-      <button class="reset-btn" id="resetThemeBtn">기본 하늘색으로 초기화</button>
+      <button class="reset-btn" id="resetThemeBtn">초기화</button>
     </div>
   </div>
 
@@ -371,11 +350,7 @@
     const accentInput = document.getElementById('accentColor');
     const resetThemeBtn = document.getElementById('resetThemeBtn');
 
-    const defaultColors = {
-      header: '#c6def5',
-      body: '#ebf3fc',
-      accent: '#33332d'
-    };
+    const defaultColors = { header: '#c6def5', body: '#ebf3fc', accent: '#33332d' };
 
     function applyColors(header, body, accent) {
       root.style.setProperty('--header-bg', header);
@@ -399,10 +374,8 @@
     bodyInput.addEventListener('input', (e) => applyColors(headerInput.value, e.target.value, accentInput.value));
     accentInput.addEventListener('input', (e) => applyColors(headerInput.value, bodyInput.value, e.target.value));
 
-    document.querySelectorAll('.preset-df, .preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if(btn.dataset.h) applyColors(btn.dataset.h, btn.dataset.b, btn.dataset.a);
-      });
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyColors(btn.dataset.h, btn.dataset.b, btn.dataset.a));
     });
 
     resetThemeBtn.addEventListener('click', () => {
