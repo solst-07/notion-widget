@@ -1,103 +1,417 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notion Calendar Widget</title>
+  <title>Square Custom Monthly Calendar</title>
   <style>
-    /* 배경을 투명하게 설정하여 노션 배경색과 자연스럽게 어울리게 함 */
-    body {
+    :root {
+      --header-bg: #c6def5;
+      --body-bg: #ebf3fc;
+      --accent-bg: #33332d;
+      --text-main: #2c353d;
+      --text-sub: #7a8694;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       background-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: Georgia, "Times New Roman", Times, serif;
     }
 
-    /* 정사각형 캘린더 카드 스타일 */
-    .calendar-card {
-      width: 160px;
-      height: 160px;
-      background-color: #ffffff;
-      border-radius: 24px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      border: 1px solid #ececec;
+    /* 완전 직각(border-radius: 0) 및 정사각형(width = height) 설정 */
+    .calendar-widget {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      background-color: var(--body-bg);
+      border-radius: 0px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       user-select: none;
     }
 
-    /* 상단 '월(Month)' 영역 */
+    /* 상단 헤더 영역 */
     .calendar-header {
-      background-color: #ff5a5f; /* 포인트 컬러 (원하는 색으로 변경 가능) */
-      color: #ffffff;
-      height: 44px;
+      background-color: var(--header-bg);
+      height: 48px;
+      padding: 0 16px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: #5a6572;
       font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      font-family: sans-serif;
+    }
+
+    .nav-btn:hover {
+      color: #1f2937;
+    }
+
+    .month-title {
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      color: var(--text-main);
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
-    /* 하단 '일(Date)' & '요일(Day)' 영역 */
+    /* 달력 본문 영역 (남은 정사각형 높이를 꽉 채우도록 설정) */
     .calendar-body {
       flex: 1;
+      padding: 12px 16px 14px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: #ffffff;
+      justify-content: space-between;
     }
 
-    .date-number {
-      font-size: 56px;
-      font-weight: 800;
-      color: #2f3437;
-      line-height: 1;
+    .weekdays, .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+    }
+
+    .weekdays {
       margin-bottom: 4px;
     }
 
-    .day-name {
+    .weekdays span {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .days-grid {
+      flex: 1;
+      align-items: center;
+    }
+
+    .day-cell {
+      height: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 13.5px;
+      color: var(--text-main);
+    }
+
+    /* 오늘 날짜 강조 */
+    .day-cell.today span {
+      background-color: var(--accent-bg);
+      color: #ffffff;
+      font-weight: 700;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 마우스 호버 시 나타나는 색상 설정 버튼 */
+    .theme-toggle-btn {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      background-color: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 0px;
+      cursor: pointer;
       font-size: 13px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .calendar-widget:hover .theme-toggle-btn {
+      opacity: 1;
+    }
+
+    /* 색상 설정 패널 */
+    .theme-panel {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.96);
+      padding: 18px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      z-index: 10;
+    }
+
+    .theme-panel.active {
+      display: flex;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #222;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .color-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #444;
+    }
+
+    .color-row input[type="color"] {
+      width: 36px;
+      height: 24px;
+      border: 1px solid #ddd;
+      padding: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    .preset-row {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .preset-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 6px;
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      font-size: 11px;
       font-weight: 600;
-      color: #888888;
-      letter-spacing: 1px;
+      color: #374151;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      background-color: #e5e7eb;
     }
   </style>
 </head>
 <body>
 
-  <div class="calendar-card">
-    <div class="calendar-header" id="month">NOV</div>
+  <div class="calendar-widget" id="widget">
+    <div class="calendar-header">
+      <button class="nav-btn" id="prevBtn" aria-label="Previous Month">&#10094;</button>
+      <div class="month-title" id="monthTitle">NOVEMBER</div>
+      <button class="nav-btn" id="nextBtn" aria-label="Next Month">&#10095;</button>
+    </div>
+
     <div class="calendar-body">
-      <div class="date-number" id="date">18</div>
-      <div class="day-name" id="day">WEDNESDAY</div>
+      <div class="weekdays">
+        <span>S</span>
+        <span>M</span>
+        <span>T</span>
+        <span>W</span>
+        <span>T</span>
+        <span>F</span>
+        <span>S</span>
+      </div>
+      <div class="days-grid" id="daysGrid"></div>
+    </div>
+
+    <!-- 우측 하단 팔레트 버튼 -->
+    <button class="theme-toggle-btn" id="openThemeBtn" title="색상 변경">🎨</button>
+
+    <!-- 색상 커스텀 패널 -->
+    <div class="theme-panel" id="themePanel">
+      <div class="panel-header">
+        <span>캘린더 색상 설정</span>
+        <button class="close-btn" id="closeThemeBtn">&times;</button>
+      </div>
+
+      <div class="color-row">
+        <label for="headerColor">상단 헤더 색상</label>
+        <input type="color" id="headerColor" value="#c6def5">
+      </div>
+
+      <div class="color-row">
+        <label for="bodyColor">전체 배경 색상</label>
+        <input type="color" id="bodyColor" value="#ebf3fc">
+      </div>
+
+      <div class="color-row">
+        <label for="accentColor">오늘 날짜 강조색</label>
+        <input type="color" id="accentColor" value="#33332d">
+      </div>
+
+      <!-- 추천 프리셋 버튼 -->
+      <div class="preset-row" title="추천 테마 바로 적용">
+        <button class="preset-btn" style="background:#c6def5" data-h="#c6def5" data-b="#ebf3fc" data-a="#33332d"></button>
+        <button class="preset-btn" style="background:#f5d0d6" data-h="#f5d0d6" data-b="#fdf2f4" data-a="#8a3b48"></button>
+        <button class="preset-btn" style="background:#cde0d3" data-h="#cde0d3" data-b="#f2f7f4" data-a="#385443"></button>
+        <button class="preset-btn" style="background:#e6dcc8" data-h="#e6dcc8" data-b="#f8f5ef" data-a="#5c4d3c"></button>
+        <button class="preset-btn" style="background:#d9d9d9" data-h="#d9d9d9" data-b="#f5f5f5" data-a="#222222"></button>
+      </div>
+
+      <button class="reset-btn" id="resetThemeBtn">기본 하늘색으로 초기화</button>
     </div>
   </div>
 
   <script>
-    function updateCalendar() {
-      const now = new Date();
-      
-      // 월 이름 (영문 3글자 표기 - 한글로 바꾸려면 ['1월', '2월', ...] 로 수정)
-      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-      // 요일 이름 (한글로 바꾸려면 ['일요일', '월요일', ...] 로 수정)
-      const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    const monthTitle = document.getElementById('monthTitle');
+    const daysGrid = document.getElementById('daysGrid');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
-      document.getElementById('month').textContent = months[now.getMonth()];
-      document.getElementById('date').textContent = now.getDate();
-      document.getElementById('day').textContent = days[now.getDay()];
+    const monthNames = [
+      "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+      "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+    ];
+
+    const today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth();
+
+    function renderCalendar(year, month) {
+      monthTitle.textContent = monthNames[month];
+      daysGrid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.classList.add('day-cell');
+        daysGrid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('day-cell');
+
+        const span = document.createElement('span');
+        span.textContent = day;
+        dayCell.appendChild(span);
+
+        if (
+          year === today.getFullYear() &&
+          month === today.getMonth() &&
+          day === today.getDate()
+        ) {
+          dayCell.classList.add('today');
+        }
+
+        daysGrid.appendChild(dayCell);
+      }
     }
 
-    // 페이지 로드 시 즉시 실행 및 1분마다 날짜 변경 체크
-    updateCalendar();
-    setInterval(updateCalendar, 60000);
+    prevBtn.addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar(currentYear, currentMonth);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar(currentYear, currentMonth);
+    });
+
+    renderCalendar(currentYear, currentMonth);
+
+    // --- 색상 커스터마이징 기능 ---
+    const root = document.documentElement;
+    const openThemeBtn = document.getElementById('openThemeBtn');
+    const closeThemeBtn = document.getElementById('closeThemeBtn');
+    const themePanel = document.getElementById('themePanel');
+    const headerInput = document.getElementById('headerColor');
+    const bodyInput = document.getElementById('bodyColor');
+    const accentInput = document.getElementById('accentColor');
+    const resetThemeBtn = document.getElementById('resetThemeBtn');
+
+    const defaultColors = {
+      header: '#c6def5',
+      body: '#ebf3fc',
+      accent: '#33332d'
+    };
+
+    function applyColors(header, body, accent) {
+      root.style.setProperty('--header-bg', header);
+      root.style.setProperty('--body-bg', body);
+      root.style.setProperty('--accent-bg', accent);
+      headerInput.value = header;
+      bodyInput.value = body;
+      accentInput.value = accent;
+      localStorage.setItem('notionCalTheme', JSON.stringify({ header, body, accent }));
+    }
+
+    // 저장된 테마 불러오기
+    const savedTheme = JSON.parse(localStorage.getItem('notionCalTheme'));
+    if (savedTheme) {
+      applyColors(savedTheme.header, savedTheme.body, savedTheme.accent);
+    }
+
+    openThemeBtn.addEventListener('click', () => themePanel.classList.add('active'));
+    closeThemeBtn.addEventListener('click', () => themePanel.classList.remove('active'));
+
+    headerInput.addEventListener('input', (e) => applyColors(e.target.value, bodyInput.value, accentInput.value));
+    bodyInput.addEventListener('input', (e) => applyColors(headerInput.value, e.target.value, accentInput.value));
+    accentInput.addEventListener('input', (e) => applyColors(headerInput.value, bodyInput.value, e.target.value));
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyColors(btn.dataset.h, btn.dataset.b, btn.dataset.a);
+      });
+    });
+
+    resetThemeBtn.addEventListener('click', () => {
+      applyColors(defaultColors.header, defaultColors.body, defaultColors.accent);
+    });
   </script>
 
 </body>
